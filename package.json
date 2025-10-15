@@ -8,6 +8,10 @@
     "start": "next start"
   },
   "dependencies": {
+    "@mistcash/config": "0.2.1",
+    "@mistcash/crypto": "0.2.1",
+    "@mistcash/react": "0.2.1",
+    "@mistcash/sdk": "0.2.1",
     "@starknet-react/chains": "^5.0.2",
     "@starknet-react/core": "^5.0.2",
     "circomlib": "^2.0.5",
@@ -21,11 +25,11 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

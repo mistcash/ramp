@@ -8,12 +8,24 @@ importers:
 
   .:
     dependencies:
+      '@mistcash/config':
+        specifier: 0.2.1
+        version: 0.2.1
+      '@mistcash/crypto':
+        specifier: 0.2.1
+        version: 0.2.1
+      '@mistcash/react':
+        specifier: 0.2.1
+        version: 0.2.1(bufferutil@4.0.9)(get-starknet-core@4.0.0)(react@19.2.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@mistcash/sdk':
+        specifier: 0.2.1
+        version: 0.2.1
       '@starknet-react/chains':
         specifier: ^5.0.2
         version: 5.0.3
       '@starknet-react/core':
         specifier: ^5.0.2
-        version: 5.0.3(bufferutil@4.0.9)(get-starknet-core@4.0.0)(react@19.2.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        version: 5.0.3(bufferutil@4.0.9)(get-starknet-core@4.0.0)(react@19.2.0)(starknet@8.5.5)(typescript@5.9.3)(utf-8-validate@5.0.10)
       circomlib:
         specifier: ^2.0.5
         version: 2.0.5
@@ -37,7 +49,7 @@ importers:
         version: 19.2.0(react@19.2.0)
       starknetkit:
         specifier: ^3.1.0
-        version: 3.2.0(2ee53bd2ce0874651cf7c85062841524)
+        version: 3.2.0(7bdb563bda5a131edced947d8b3e7f4d)
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -113,6 +125,10 @@ packages:
       tailwindcss-animate: ^1.0.7
       url-join: 5.0.0
       zod: 4.0.5
+
+  '@aztec/bb.js@0.87.4-starknet.1':
+    resolution: {integrity: sha512-o1jGxw9TR4duY5la9wyiYp0b2BMvQGWVUV8pgCStCZmpge3g/L3jdJSfSX6GJr63pE90rUNBqsAUKVRiWmRWcw==}
+    hasBin: true
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -837,6 +853,20 @@ packages:
   '@lit/reactive-element@2.1.1':
     resolution: {integrity: sha512-N+dm5PAYdQ8e6UlywyyrgI2t++wFGXfHx+dSJ1oBrg6FAxUj40jId++EaRm80MKX5JnlH1sBsyZ5h0bcZKemCg==}
 
+  '@mistcash/config@0.2.1':
+    resolution: {integrity: sha512-getRAAyRV2k91Y+WP1VskktReXw6LbXfHSE7qEfbHTdBQTnWq/OcW5yKlhC/+VhSBm5sPNAcb9k8x6aGnVBFsQ==}
+
+  '@mistcash/crypto@0.2.1':
+    resolution: {integrity: sha512-pGWONQrDBYK8BLZ094NQDXqXZRFJqZlrfk5+6bJsztvybnKei9Nb0lJupzeqdRE8txkTCBDFRbgabNQB8MsKYg==}
+
+  '@mistcash/react@0.2.1':
+    resolution: {integrity: sha512-Q5hqoMxWMPkghgX5BnIUVMxtQXhDO3dQHzr/jeGRpqxwaG8tYgLV+cKl4yp16vSQX8Yt90IbFsNnW59cfpP+bA==}
+    peerDependencies:
+      react: ^19.1.0
+
+  '@mistcash/sdk@0.2.1':
+    resolution: {integrity: sha512-oHrvtj2TLgWilnBpVKeVSKKaUbvZxX8ngJgkMjI1W7ce5LxQfqumBoz97LW87+z2JfiTQUgCOPWqTKp7HNqUhA==}
+
   '@module-federation/runtime@0.1.21':
     resolution: {integrity: sha512-/p4BhZ0SnjJuiL0wwu+FebFgIUJ9vM+oCY7CyprUHImyi/Y23ulI61WNWMVrKQGgdMoXQDQCL8RH4EnrVP2ZFw==}
 
@@ -846,6 +876,36 @@ packages:
   '@msgpack/msgpack@3.1.2':
     resolution: {integrity: sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ==}
     engines: {node: '>= 18'}
+
+  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
+    resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.3':
+    resolution: {integrity: sha512-mdzd3AVzYKuUmiWOQ8GNhl64/IoFGol569zNRdkLReh6LRLHOXxU4U8eq0JwaD8iFHdVGqSy4IjFL4reoWCDFw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.3':
+    resolution: {integrity: sha512-YxQL+ax0XqBJDZiKimS2XQaf+2wDGVa1enVRGzEvLLVFeqa5kx2bWbtcSXgsxjQB7nRqqIGFIcLteF/sHeVtQg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.3':
+    resolution: {integrity: sha512-fg0uy/dG/nZEXfYilKoRe7yALaNmHoYeIoJuJ7KJ+YyU2bvY8vPv27f7UKhGRpY6euFYqEVhxCFZgAUNQBM3nw==}
+    cpu: [arm]
+    os: [linux]
+
+  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.3':
+    resolution: {integrity: sha512-cvwNfbP07pKUfq1uH+S6KJ7dT9K8WOE4ZiAcsrSes+UY55E/0jLYc+vq+DO7jlmqRb5zAggExKm0H7O/CBaesg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.3':
+    resolution: {integrity: sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@next/env@15.5.5':
     resolution: {integrity: sha512-2Zhvss36s/yL+YSxD5ZL5dz5pI6ki1OLxYlh6O77VJ68sBnlUrl5YqhBgCy7FkdMsp9RBeGFwpuDCdpJOqdKeQ==}
@@ -950,6 +1010,18 @@ packages:
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
     engines: {node: ^14.21.3 || >=16}
+
+  '@noir-lang/acvm_js@1.0.0-beta.5':
+    resolution: {integrity: sha512-t2E2h7ZOkbP4+ukPfvicIGUHsF/gX0kxGIwQvOe+hcR7p2j6ttxWKBHBurQrGLuII9+6qUmp6P6fnOBNasoslQ==}
+
+  '@noir-lang/noir_js@1.0.0-beta.5':
+    resolution: {integrity: sha512-ab0h/MTbqqj/BqWkvSpeYtTcUrv645NgNteE208QRJiM9fEwL6RcLXb3Ms54csortzLB0CVMtnV3qGkeG+Xklg==}
+
+  '@noir-lang/noirc_abi@1.0.0-beta.5':
+    resolution: {integrity: sha512-1ZH2oXlgwdrNliWLVbDxyY6UPCsZ+pjA8PiIdzeaE+Kpn6J3diX8MsbYHyx8em0Vn2MXWt+CSa90YdHWy+hKrw==}
+
+  '@noir-lang/types@1.0.0-beta.5':
+    resolution: {integrity: sha512-NNddtY4KMIA7cwa69A2NXeAVvzKX44fmojuwY1HBgzwraHOY1mWyaQC+Vl9Xm97fAm2qpXTrbVT6vPkhag0vHg==}
 
   '@phosphor-icons/webcomponents@2.1.5':
     resolution: {integrity: sha512-JcvQkZxvcX2jK+QCclm8+e8HXqtdFW9xV4/kk2aL9Y3dJA2oQVt+pzbv1orkumz3rfx4K9mn9fDoMr1He1yr7Q==}
@@ -1877,6 +1949,9 @@ packages:
   colord@2.9.3:
     resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
 
+  comlink@4.4.2:
+    resolution: {integrity: sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==}
+
   commander@12.1.0:
     resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
     engines: {node: '>=18'}
@@ -2699,6 +2774,13 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
+  msgpackr-extract@3.0.3:
+    resolution: {integrity: sha512-P0efT1C9jIdVRefqjzOQ9Xml57zpOXnIuS+csaB4MdZbTdmGDLo8XhzBG1N7aO11gKDDkJvBLULeFTo46wwreA==}
+    hasBin: true
+
+  msgpackr@1.11.5:
+    resolution: {integrity: sha512-UjkUHN0yqp9RWKy0Lplhh+wlpdt9oQBYgULZOiFhV3VclSF1JnSQWZ5r9gORQlNYaUKQoR8itv7g7z1xDDuACA==}
+
   multiformats@9.9.0:
     resolution: {integrity: sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg==}
 
@@ -2746,6 +2828,10 @@ packages:
 
   node-gyp-build-optional-packages@5.1.1:
     resolution: {integrity: sha512-+P72GAjVAbTxjjwUmwjVrqrdZROD4nf8KgpBoDxqXXTiYZZt/ud60dE5yvCSr9lRO8e8yv6kgJIC0K0PfZFVQw==}
+    hasBin: true
+
+  node-gyp-build-optional-packages@5.2.2:
+    resolution: {integrity: sha512-s+w+rBWnpTMwSFbaE0UXsRlg7hU4FjekKU4eyAih5T8nJuNZT1nNsskXpxmeqSK9UzkBl6UgRlnKc8hz8IEqOw==}
     hasBin: true
 
   node-gyp-build@4.8.4:
@@ -2904,6 +2990,10 @@ packages:
 
   pino@7.11.0:
     resolution: {integrity: sha512-dMACeu63HtRLmCG8VKdy4cShCPKaYDR4youZqoSWLxl5Gu99HUw8bw75thbPv9Nip+H+QYX8o3ZJbTdVZZ2TVg==}
+    hasBin: true
+
+  pino@9.13.1:
+    resolution: {integrity: sha512-Szuj+ViDTjKPQYiKumGmEn3frdl+ZPSdosHyt9SnUevFosOkMY2b7ipxlEctNKPmMD/VibeBI+ZcZCJK+4DPuw==}
     hasBin: true
 
   pirates@4.0.7:
@@ -3853,7 +3943,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@argent/x-ui@1.109.1(359d9e5b5393075dd252d9daa92869a1)':
+  '@argent/x-ui@1.109.1(4880032fe5578ce1d2a339d71b5d4759)':
     dependencies:
       '@chakra-ui/react': 2.10.9(@emotion/react@11.14.0(@types/react@19.1.0)(react@19.2.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.1.0)(react@19.2.0))(@types/react@19.1.0)(react@19.2.0))(@types/react@19.1.0)(framer-motion@11.18.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@emotion/react': 11.14.0(@types/react@19.1.0)(react@19.2.0)
@@ -3885,12 +3975,23 @@ snapshots:
       react-router-dom: 7.9.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-spring-bottom-sheet: 3.5.0-alpha.0(@react-three/fiber@9.4.0(@types/react@19.1.0)(react-dom@19.2.0(react@19.2.0))(react-native@0.82.0(@babel/core@7.28.4)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react@19.2.0)(three@0.180.0))(@types/react@19.1.0)(konva@10.0.2)(react-dom@19.2.0(react@19.2.0))(react-konva@18.2.14(@types/react@19.1.0)(konva@10.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-native@0.82.0(@babel/core@7.28.4)(@types/react@19.1.0)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10))(react-zdog@1.2.2)(react@19.2.0)(three@0.180.0)(zdog@1.1.3)
       react-virtuoso: 4.14.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      starknet: 8.5.5
       swr: 2.3.6(react@19.2.0)
       tailwind-merge: 3.3.1
       tailwindcss: 4.1.14
       tailwindcss-animate: 1.0.7(tailwindcss@4.1.14)
       url-join: 5.0.0
       zod: 4.1.12
+
+  '@aztec/bb.js@0.87.4-starknet.1':
+    dependencies:
+      comlink: 4.4.2
+      commander: 12.1.0
+      idb-keyval: 6.2.2
+      msgpackr: 1.11.5
+      pako: 2.1.0
+      pino: 9.13.1
+      tslib: 2.8.1
 
   '@babel/code-frame@7.27.1':
     dependencies:
@@ -4828,6 +4929,38 @@ snapshots:
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.4.0
 
+  '@mistcash/config@0.2.1':
+    dependencies:
+      starknet: 8.5.5
+
+  '@mistcash/crypto@0.2.1':
+    dependencies:
+      garaga: 0.18.2
+
+  '@mistcash/react@0.2.1(bufferutil@4.0.9)(get-starknet-core@4.0.0)(react@19.2.0)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@aztec/bb.js': 0.87.4-starknet.1
+      '@mistcash/config': 0.2.1
+      '@mistcash/crypto': 0.2.1
+      '@mistcash/sdk': 0.2.1
+      '@noir-lang/noir_js': 1.0.0-beta.5
+      '@starknet-react/chains': 5.0.3
+      '@starknet-react/core': 5.0.3(bufferutil@4.0.9)(get-starknet-core@4.0.0)(react@19.2.0)(starknet@8.5.5)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      garaga: 0.18.2
+      react: 19.2.0
+      starknet: 8.5.5
+    transitivePeerDependencies:
+      - bufferutil
+      - get-starknet-core
+      - typescript
+      - utf-8-validate
+
+  '@mistcash/sdk@0.2.1':
+    dependencies:
+      '@mistcash/config': 0.2.1
+      '@mistcash/crypto': 0.2.1
+      starknet: 8.5.5
+
   '@module-federation/runtime@0.1.21':
     dependencies:
       '@module-federation/sdk': 0.1.21
@@ -4835,6 +4968,24 @@ snapshots:
   '@module-federation/sdk@0.1.21': {}
 
   '@msgpack/msgpack@3.1.2': {}
+
+  '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-darwin-x64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-linux-arm@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-linux-x64@3.0.3':
+    optional: true
+
+  '@msgpackr-extract/msgpackr-extract-win32-x64@3.0.3':
+    optional: true
 
   '@next/env@15.5.5': {}
 
@@ -4903,6 +5054,21 @@ snapshots:
   '@noble/hashes@1.7.0': {}
 
   '@noble/hashes@1.8.0': {}
+
+  '@noir-lang/acvm_js@1.0.0-beta.5': {}
+
+  '@noir-lang/noir_js@1.0.0-beta.5':
+    dependencies:
+      '@noir-lang/acvm_js': 1.0.0-beta.5
+      '@noir-lang/noirc_abi': 1.0.0-beta.5
+      '@noir-lang/types': 1.0.0-beta.5
+      pako: 2.1.0
+
+  '@noir-lang/noirc_abi@1.0.0-beta.5':
+    dependencies:
+      '@noir-lang/types': 1.0.0-beta.5
+
+  '@noir-lang/types@1.0.0-beta.5': {}
 
   '@phosphor-icons/webcomponents@2.1.5':
     dependencies:
@@ -5435,7 +5601,7 @@ snapshots:
 
   '@starknet-react/chains@5.0.3': {}
 
-  '@starknet-react/core@5.0.3(bufferutil@4.0.9)(get-starknet-core@4.0.0)(react@19.2.0)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+  '@starknet-react/core@5.0.3(bufferutil@4.0.9)(get-starknet-core@4.0.0)(react@19.2.0)(starknet@8.5.5)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@starknet-io/types-js': 0.7.10
       '@starknet-react/chains': 5.0.3
@@ -5444,6 +5610,7 @@ snapshots:
       eventemitter3: 5.0.1
       get-starknet-core: 4.0.0
       react: 19.2.0
+      starknet: 8.5.5
       viem: 2.38.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       zod: 3.25.76
     transitivePeerDependencies:
@@ -6612,6 +6779,8 @@ snapshots:
 
   colord@2.9.3: {}
 
+  comlink@4.4.2: {}
+
   commander@12.1.0: {}
 
   commander@2.20.3: {}
@@ -7537,6 +7706,22 @@ snapshots:
 
   ms@2.1.3: {}
 
+  msgpackr-extract@3.0.3:
+    dependencies:
+      node-gyp-build-optional-packages: 5.2.2
+    optionalDependencies:
+      '@msgpackr-extract/msgpackr-extract-darwin-arm64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-darwin-x64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-linux-arm': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-linux-arm64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-linux-x64': 3.0.3
+      '@msgpackr-extract/msgpackr-extract-win32-x64': 3.0.3
+    optional: true
+
+  msgpackr@1.11.5:
+    optionalDependencies:
+      msgpackr-extract: 3.0.3
+
   multiformats@9.9.0: {}
 
   nanoid@3.3.11: {}
@@ -7573,6 +7758,11 @@ snapshots:
       whatwg-url: 5.0.0
 
   node-gyp-build-optional-packages@5.1.1:
+    dependencies:
+      detect-libc: 2.1.2
+    optional: true
+
+  node-gyp-build-optional-packages@5.2.2:
     dependencies:
       detect-libc: 2.1.2
     optional: true
@@ -7786,6 +7976,20 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 2.8.0
       thread-stream: 0.15.2
+
+  pino@9.13.1:
+    dependencies:
+      atomic-sleep: 1.0.0
+      on-exit-leak-free: 2.1.2
+      pino-abstract-transport: 2.0.0
+      pino-std-serializers: 7.0.0
+      process-warning: 5.0.0
+      quick-format-unescaped: 4.0.4
+      real-require: 0.2.0
+      safe-stable-stringify: 2.5.0
+      slow-redact: 0.3.2
+      sonic-boom: 4.2.0
+      thread-stream: 3.1.0
 
   pirates@4.0.7: {}
 
@@ -8292,9 +8496,9 @@ snapshots:
       pako: 2.1.0
       ts-mixer: 6.0.4
 
-  starknetkit@3.2.0(2ee53bd2ce0874651cf7c85062841524):
+  starknetkit@3.2.0(7bdb563bda5a131edced947d8b3e7f4d):
     dependencies:
-      '@argent/x-ui': 1.109.1(359d9e5b5393075dd252d9daa92869a1)
+      '@argent/x-ui': 1.109.1(4880032fe5578ce1d2a339d71b5d4759)
       '@cartridge/controller': 0.10.7(@types/react@19.1.0)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.12)
       '@starknet-io/get-starknet': 4.0.8
       '@starknet-io/get-starknet-core': 4.0.8
@@ -8309,6 +8513,7 @@ snapshots:
       lodash-es: 4.17.21
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
+      starknet: 8.5.5
       svelte-forms: 2.3.1
       trpc-browser: 1.4.4(@trpc/client@10.45.2(@trpc/server@10.45.2))(@trpc/server@10.45.2)
     transitivePeerDependencies:
