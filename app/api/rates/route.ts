@@ -1,26 +1,23 @@
 import { NextResponse } from 'next/server';
-import { MOCK_EXCHANGE_RATE } from '../../../lib/config';
 
 export async function GET() {
 	try {
-		const rate = {
-			rate: MOCK_EXCHANGE_RATE,
-			timestamp: new Date().toISOString(),
-			expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
-			source: 'mock'
-		};
+		const response = await (await fetch('https://api.paycrest.io/v1/rates/USDC/100/KES?network=base')).json();
 
-		return NextResponse.json(rate, {
-			headers: {
-				'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
-				'Content-Type': 'application/json'
-			}
-		});
+		console.log('Paycrest response status:', response);
+		if (response && response.status === 'success' && response.data) {
+
+			return NextResponse.json({
+				rate: response.data
+			});
+		} else {
+			console.error('Error fetching exchange rates:', response);
+		}
 	} catch (error) {
 		console.error('Error fetching exchange rates:', error);
-		return NextResponse.json(
-			{ error: 'Failed to fetch exchange rates' },
-			{ status: 500 }
-		);
 	}
+	return NextResponse.json(
+		{ error: 'Failed to fetch exchange rates' },
+		{ status: 500 }
+	);
 }
