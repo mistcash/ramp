@@ -6,6 +6,7 @@ import { DollarSign, Smartphone, Send, WalletMinimal } from 'lucide-react';
 import StarknetWalletGate from './StarknetWalletGate';
 import { useAccount, useContract, useSendTransaction } from '@starknet-react/core';
 import { uint256 } from "starknet"
+import Image from "next/image";
 
 const USDC_ADDRESS = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8"; // Starknet Mainnet USDC
 const EXCHANGE_RATE = 130; // 1 USDC = 130 KES (example rate)
@@ -16,27 +17,27 @@ const ERC20_ABI = [
 		"name": "approve",
 		"type": "function",
 		"inputs": [
-			{"name": "spender", "type": "felt"},
-			{"name": "amount", "type": "Uint256"}
+			{ "name": "spender", "type": "felt" },
+			{ "name": "amount", "type": "Uint256" }
 		],
-		"outputs": [{"name": "success", "type": "felt"}],
+		"outputs": [{ "name": "success", "type": "felt" }],
 		"state_mutability": "external"
 	},
 	{
 		"name": "transfer",
 		"type": "function",
 		"inputs": [
-			{"name": "recipient", "type": "felt"},
-			{"name": "amount", "type": "Uint256"}
+			{ "name": "recipient", "type": "felt" },
+			{ "name": "amount", "type": "Uint256" }
 		],
-		"outputs": [{"name": "success", "type": "felt"}],
+		"outputs": [{ "name": "success", "type": "felt" }],
 		"state_mutability": "external"
 	},
 	{
 		"name": "balanceOf",
 		"type": "function",
-		"inputs": [{"name": "account", "type": "felt"}],
-		"outputs": [{"name": "balance", "type": "Uint256"}],
+		"inputs": [{ "name": "account", "type": "felt" }],
+		"outputs": [{ "name": "balance", "type": "Uint256" }],
 		"state_mutability": "view"
 	}
 ] as const;
@@ -86,7 +87,7 @@ const MPesaDepositUI: React.FC = () => {
 	// Handle deposit submission
 	const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		
+
 		if (!mpesaPhone || !usdcAmount || !address || !usdcContract) {
 			console.error("Missing required fields");
 			return;
@@ -131,7 +132,7 @@ const MPesaDepositUI: React.FC = () => {
 			]);
 
 			alert(`Deposit successful! You will receive KES ${kesAmount} to ${mpesaPhone}`);
-			
+
 			// Reset form
 			setMpesaPhone('');
 			setUsdcAmount('');
@@ -146,15 +147,28 @@ const MPesaDepositUI: React.FC = () => {
 
 	return (
 		<form onSubmit={handleDeposit} className="w-full">
+			<div className="mt-8 mb-12 text-center max-w-6xl mx-auto px-4 black-shadow text-xl flex items-center justify-center">
+				<Image
+					className="mr-2"
+					src="/mist-logo.svg"
+					alt="Mist logo"
+					width={40}
+					height={40}
+					priority
+					style={{ filter: 'brightness(0) invert(1)' }}
+				/>
+				MIST Ramp
+			</div>
+
 			<h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-8">
-				Deposit USDC, Receive M-Pesa KES
+				Off-Ramp with Privacy
 			</h2>
-			<p className="text-lg text-gray-300 text-center mb-12 max-w-2xl mx-auto">
-				Convert your USDC to Kenyan Shillings and receive payment directly to your M-Pesa account.
+			<p className="text-md text-gray-300 text-center mb-12 max-w-2xl mx-auto">
+				Private USDC transfer to Kenyan Shillings in your M-Pesa account.
 			</p>
 
 			{/* MPesa Phone Number */}
-			<Field 
+			<Field
 				label="M-Pesa Phone Number"
 				subtitle="Enter your Kenyan phone number (e.g., 0712345678 or +254712345678)"
 			>
@@ -183,7 +197,7 @@ const MPesaDepositUI: React.FC = () => {
 			</Field>
 
 			{/* KES Amount Display */}
-			<Field 
+			<Field
 				label="You Will Receive"
 				subtitle={`Exchange rate: 1 USDC = ${EXCHANGE_RATE} KES`}
 			>
