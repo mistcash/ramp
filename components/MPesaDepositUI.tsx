@@ -170,15 +170,16 @@ const MPesaDepositUI: React.FC = () => {
 			{/* MPesa Phone Number */}
 			<Field
 				label="M-Pesa Phone Number"
-				subtitle="Enter your Kenyan phone number (e.g., 0712345678 or +254712345678)"
+				subtitle="Enter your Kenyan phone number"
 			>
 				<InputField
 					required={true}
 					icon={icon('#10B981', Smartphone)}
-					placeholder='0712345678'
-					value={mpesaPhone}
+					placeholder='712345678'
+					value={'+254' + mpesaPhone.replace('+254', '')}
 					onChange={e => setMpesaPhone(e.target.value)}
 					type="tel"
+					pattern="^\+254\d{9}$"
 				/>
 			</Field>
 
@@ -198,13 +199,13 @@ const MPesaDepositUI: React.FC = () => {
 
 			{/* KES Amount Display */}
 			<Field
-				label="You Will Receive"
-				subtitle={`Exchange rate: 1 USDC = ${EXCHANGE_RATE} KES`}
+				// label="You Will Receive"
+				label={`1 USDC = ${EXCHANGE_RATE} KES`}
 			>
-				<div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+				<div className="bg-gray-800 rounded-lg p-2 border border-gray-700">
 					<div className="flex items-center justify-between">
 						<span className="text-gray-400">KES Amount:</span>
-						<span className="text-white text-2xl font-bold">
+						<span className="text-white text-2xl font-bold line-hei">
 							{kesAmount} KES
 						</span>
 					</div>

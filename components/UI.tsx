@@ -140,16 +140,16 @@ export const Dropdown = ({ options, selectedId, onSelect, placeholder = "Select 
 };
 
 export interface FieldProps {
-	label: string;
+	label?: string;
 	children: React.ReactNode;
 	subtitle?: string;
 }
 
 export const Field = ({ label, children, subtitle }: FieldProps) => (
 	<div className="mb-6">
-		<div className="mb-2">
+		{label && <div className="mb-2">
 			<h3 className="text-white text-sm font-medium">{label}</h3>
-		</div>
+		</div>}
 		{children}
 		{subtitle && <p className="text-gray-400 text-xs mt-1">{subtitle}</p>}
 	</div>
