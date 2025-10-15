@@ -7,9 +7,9 @@ import StarknetWalletGate from './StarknetWalletGate';
 import { useAccount, useContract, useSendTransaction } from '@starknet-react/core';
 import { uint256 } from "starknet"
 import Image from "next/image";
+import { set } from 'zod';
 
 const USDC_ADDRESS = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8"; // Starknet Mainnet USDC
-const EXCHANGE_RATE = 130; // 1 USDC = 130 KES (example rate)
 
 // ERC20 ABI subset for approve and transfer
 const ERC20_ABI = [
@@ -56,11 +56,19 @@ const MPesaDepositUI: React.FC = () => {
 	const { sendAsync, isPending, error } = useSendTransaction({});
 	const { contract: usdcContract } = useContract({ abi: ERC20_ABI, address: USDC_ADDRESS as `0x${string}` });
 	const [balance, setBalance] = useState<string>('0');
+	const [rate, setRate] = useState<number>(0);
 
 	// Calculate KES amount when USDC amount changes
 	useEffect(() => {
+		(async () => {
+			const response = await (await fetch('/api/rates')).json();
+			setRate(response.rate);
+		})();
+	}, [usdcAmount]);
+
+	useEffect(() => {
 		if (usdcAmount) {
-			const kes = (parseFloat(usdcAmount) * EXCHANGE_RATE).toFixed(2);
+			const kes = Math.floor(parseFloat(usdcAmount) * rate).toFixed(2);
 			setKesAmount(kes);
 		} else {
 			setKesAmount('0.00');
@@ -200,7 +208,7 @@ const MPesaDepositUI: React.FC = () => {
 			{/* KES Amount Display */}
 			<Field
 				// label="You Will Receive"
-				label={`1 USDC = ${EXCHANGE_RATE} KES`}
+				label={`1 USDC = ${rate} KES`}
 			>
 				<div className="bg-gray-800 rounded-lg p-2 border border-gray-700">
 					<div className="flex items-center justify-between">
