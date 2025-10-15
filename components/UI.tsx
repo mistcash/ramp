@@ -161,10 +161,11 @@ export interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElem
 		content: React.ReactNode;
 	};
 	action?: React.ReactNode;
+	after?: React.ReactNode;
 }
 
-export const InputField = ({ icon, action, ...inputProps }: InputFieldProps) => (
-	<div className="bg-gray-800 rounded-lg p-2 border border-gray-700 flex items-center gap-3">
+export const InputField = ({ icon, action, after, ...inputProps }: InputFieldProps) => (
+	<div className="bg-gray-800 rounded-lg p-2 border border-gray-700 flex items-center gap-3 relative">
 		<div className="w-8 h-8 rounded-full flex items-center justify-center" style={icon.bg ? { backgroundColor: icon.bg } : {}}>
 			{icon.content}
 		</div>
@@ -178,6 +179,7 @@ export const InputField = ({ icon, action, ...inputProps }: InputFieldProps) => 
 				{action}
 			</button>
 		)}
+		{!!after && after}
 	</div>
 );
 
