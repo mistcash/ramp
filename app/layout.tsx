@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mist Ramp - USDC to M-Pesa",
-  description: "USDC off-ramp to Kenyan Shillings via M-Pesa",
+  title: "MIST.cash Ramp",
+  description: "Convert USDC to Kenyan Shillings via M-Pesa",
 };
 
 export default function RootLayout({
