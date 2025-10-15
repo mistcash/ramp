@@ -17,7 +17,8 @@
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "starknetkit": "^3.1.0"
+    "starknetkit": "^3.1.0",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "typescript": "^5",
