@@ -1,3 +1,5 @@
+'use client';
+
 import MPesaDepositUI from "@/components/MPesaDepositUI";
 
 export default function Home() {

@@ -4,43 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { Field, InputField, Button, baseUIBoxClasses } from './UI';
 import { DollarSign, Smartphone, Send, WalletMinimal } from 'lucide-react';
 import StarknetWalletGate from './StarknetWalletGate';
-import { useAccount, useContract, useSendTransaction } from '@starknet-react/core';
+import { useAccount, useContract, useSendTransaction, useProvider } from '@starknet-react/core';
 import { uint256 } from "starknet"
 import Image from "next/image";
-import { set } from 'zod';
+import { useMist } from '@mistcash/react';
+import { hash, txSecret } from '@mistcash/crypto';
+import { ERC20_ABI, Token, tokensData, tokensMap } from '@mistcash/config';
+import { fmtAmount, fmtAmtToBigInt } from '@mistcash/sdk';
 
-const USDC_ADDRESS = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8"; // Starknet Mainnet USDC
+const USDC_TOKEN = tokensData.find(token => token.name === 'USDC') as Token;
 
-// ERC20 ABI subset for approve and transfer
-const ERC20_ABI = [
-	{
-		"name": "approve",
-		"type": "function",
-		"inputs": [
-			{ "name": "spender", "type": "felt" },
-			{ "name": "amount", "type": "Uint256" }
-		],
-		"outputs": [{ "name": "success", "type": "felt" }],
-		"state_mutability": "external"
-	},
-	{
-		"name": "transfer",
-		"type": "function",
-		"inputs": [
-			{ "name": "recipient", "type": "felt" },
-			{ "name": "amount", "type": "Uint256" }
-		],
-		"outputs": [{ "name": "success", "type": "felt" }],
-		"state_mutability": "external"
-	},
-	{
-		"name": "balanceOf",
-		"type": "function",
-		"inputs": [{ "name": "account", "type": "felt" }],
-		"outputs": [{ "name": "balance", "type": "Uint256" }],
-		"state_mutability": "view"
-	}
-] as const;
+const USDC_ADDRESS = USDC_TOKEN.id;
 
 function icon(bg: string, Icon: React.ElementType): { bg: string; content: React.ReactElement } {
 	return {
@@ -52,27 +26,41 @@ const MPesaDepositUI: React.FC = () => {
 	const [mpesaPhone, setMpesaPhone] = useState<string>('');
 	const [usdcAmount, setUsdcAmount] = useState<string>('');
 	const [kesAmount, setKesAmount] = useState<string>('0.00');
+	const [salt, setSalt] = useState<string>('');
 	const { address } = useAccount();
-	const { sendAsync, isPending, error } = useSendTransaction({});
+
+	// Use Mist hook for transaction management (exactly like TransferUI)
+	const {
+		contract, send, isPending, txError: error,
+		chamberAddress,
+	} = useMist(useProvider(), useSendTransaction({}));
+
+	const { sendAsync } = useSendTransaction({});
+
 	const { contract: usdcContract } = useContract({ abi: ERC20_ABI, address: USDC_ADDRESS as `0x${string}` });
 	const [balance, setBalance] = useState<string>('0');
 	const [rate, setRate] = useState<number>(0);
 
+	// Generate random salt on component mount
+	useEffect(() => {
+		setSalt(genSalt());
+	}, []);
+
 	// Calculate KES amount when USDC amount changes
 	useEffect(() => {
 		(async () => {
-			const response = await (await fetch('/api/rates')).json();
-			setRate(response.rate);
+			let appliedRate = rate;
+			if (!appliedRate) {
+				const { rate: appliedRate } = await (await fetch('/api/rates')).json();
+				setRate(appliedRate);
+			}
+			if (usdcAmount) {
+				const kes = (parseFloat(usdcAmount) * appliedRate).toFixed(2);
+				setKesAmount(kes);
+			} else {
+				setKesAmount('0.00');
+			}
 		})();
-	}, [usdcAmount]);
-
-	useEffect(() => {
-		if (usdcAmount) {
-			const kes = Math.floor(parseFloat(usdcAmount) * rate).toFixed(2);
-			setKesAmount(kes);
-		} else {
-			setKesAmount('0.00');
-		}
 	}, [usdcAmount]);
 
 	// Fetch USDC balance
@@ -81,10 +69,9 @@ const MPesaDepositUI: React.FC = () => {
 			if (usdcContract && address) {
 				try {
 					const bal = await usdcContract.balanceOf(address as string);
-					const balanceValue = uint256.uint256ToBN(bal as any).toString();
-					// Convert from wei (6 decimals for USDC)
-					const formattedBalance = (parseInt(balanceValue) / 1e6).toFixed(6);
-					setBalance(formattedBalance);
+					const balanceValue = uint256.uint256ToBN(bal as any);
+					console.log("Balance value (bigint):", balanceValue, fmtAmount(balanceValue, 6));
+					setBalance(parseFloat(fmtAmount(balanceValue, 6)).toFixed(2));
 				} catch (error) {
 					console.error("Failed to fetch balance:", error);
 				}
@@ -96,7 +83,7 @@ const MPesaDepositUI: React.FC = () => {
 	const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		if (!mpesaPhone || !usdcAmount || !address || !usdcContract) {
+		if (!mpesaPhone || !usdcAmount || !address || !usdcContract || !salt || !contract) {
 			console.error("Missing required fields");
 			return;
 		}
@@ -109,21 +96,47 @@ const MPesaDepositUI: React.FC = () => {
 		}
 
 		try {
-			// Convert USDC amount to wei (6 decimals)
-			const amount = parseFloat(usdcAmount) * 1e6;
-			const amountUint256 = uint256.bnToUint256(BigInt(Math.floor(amount)));
+			// Normalize phone number
+			const normalizedPhone = mpesaPhone.replace(/^(\+254|254|0)/, '254');
 
-			// Call API to example.com
-			const apiResponse = await fetch('https://example.com/api/deposit', {
+			// Create transaction secret from salt + phone number + currency ID 'KES'
+			const secretInput = await hash(BigInt(normalizedPhone), BigInt(salt));
+
+			// Convert USDC amount to wei (6 decimals for USDC)
+			const amount_bi = fmtAmtToBigInt(usdcAmount, USDC_TOKEN.decimals || 18);
+			const amount = uint256.bnToUint256(amount_bi);
+
+			// Set up the USDC contract
+			usdcContract.address = USDC_ADDRESS;
+
+			const asset = {
+				amount,
+				addr: USDC_ADDRESS
+			};
+
+			const txSecretValue = await txSecret(secretInput.toString(), address);
+			// Set the USDC contract address (exactly like TransferUI)
+			usdcContract.address = USDC_ADDRESS;
+
+			// Execute the Mist deposit transaction (exactly like TransferUI)
+			sendAsync([
+				usdcContract.populate('approve', [chamberAddress, amount]),
+				contract.populate('deposit', [txSecretValue, asset])
+			]);
+
+
+			// Call API to process the deposit request
+			const apiResponse = await fetch('/api/offramp/process', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					mpesaPhone: mpesaPhone.replace(/^(\+254|254|0)/, '254'),
+					mpesaPhone: normalizedPhone,
 					usdcAmount: usdcAmount,
 					kesAmount: kesAmount,
 					walletAddress: address,
+					secretInput: secretInput, // Include the secret input for the backend
 				}),
 			});
 
@@ -134,20 +147,15 @@ const MPesaDepositUI: React.FC = () => {
 			const apiData = await apiResponse.json();
 			console.log('API Response:', apiData);
 
-			// Execute the transfer transaction
-			await sendAsync([
-				usdcContract.populate('transfer', [apiData.recipientAddress || address, amountUint256])
-			]);
-
 			alert(`Deposit successful! You will receive KES ${kesAmount} to ${mpesaPhone}`);
 
-			// Reset form
+			// Reset form and generate new salt
 			setMpesaPhone('');
 			setUsdcAmount('');
 			setKesAmount('0.00');
+			setSalt(Math.random().toString(36).substring(2, 15));
 		} catch (error) {
-			console.error("Failed to process deposit:", error);
-			alert(`Deposit failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			console.error("Failed to send transaction:", error);
 		}
 	};
 
@@ -184,7 +192,7 @@ const MPesaDepositUI: React.FC = () => {
 					required={true}
 					icon={icon('#10B981', Smartphone)}
 					placeholder='712345678'
-					value={'+254' + mpesaPhone.replace('+254', '')}
+					value={'+254' + mpesaPhone.replace(/\+25?4?/, '')}
 					onChange={e => setMpesaPhone(e.target.value)}
 					type="tel"
 					pattern="^\+254\d{9}$"
@@ -194,7 +202,7 @@ const MPesaDepositUI: React.FC = () => {
 			{/* USDC Amount */}
 			<Field label="USDC Amount">
 				<InputField
-					required={true}
+					after={address && <span className="text-sm -mt-1 mb-auto text-gray-400">Max: {balance}</span>} required={true}
 					icon={icon('#3B82F6', DollarSign)}
 					placeholder='Enter USDC amount'
 					value={usdcAmount}
@@ -220,18 +228,6 @@ const MPesaDepositUI: React.FC = () => {
 				</div>
 			</Field>
 
-			{/* Wallet Balance */}
-			{address && (
-				<div className="mb-6">
-					<div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-						<div className="flex items-center justify-between">
-							<span className="text-gray-400 text-sm">Your USDC Balance:</span>
-							<span className="text-white font-medium">{balance} USDC</span>
-						</div>
-					</div>
-				</div>
-			)}
-
 			{/* Submit Button */}
 			<div>
 				<StarknetWalletGate label={<><WalletMinimal className="w-5 h-5" />Connect Wallet</>}>
@@ -251,3 +247,14 @@ const MPesaDepositUI: React.FC = () => {
 };
 
 export default MPesaDepositUI;
+function genSalt(): string {
+	// 200bit salt + KES currency ID
+	return '0x' +
+		Math.random().toString(16).substring(2, 12) +
+		Math.random().toString(16).substring(2, 12) +
+		Math.random().toString(16).substring(2, 12) +
+		Math.random().toString(16).substring(2, 12) +
+		Math.random().toString(16).substring(2, 12) +
+		parseInt('KES', 36).toString(16);
+}
+
