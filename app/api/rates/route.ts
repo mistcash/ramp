@@ -1,17 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getExchangeRate } from '@/lib/payment-provider-wrapper';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
 	try {
-		const response = await (await fetch('https://api.paycrest.io/v1/rates/USDC/100/KES?network=base')).json();
-
-		console.log('Paycrest response status:', response);
-		if (response && response.status === 'success' && response.data) {
-
-			return NextResponse.json({
-				rate: response.data
-			});
+		const rate = await getExchangeRate();
+		if (rate) {
+			return NextResponse.json({ rate });
 		} else {
-			console.error('Error fetching exchange rates:', response);
+			console.error('Error fetching exchange rates:', rate);
 		}
 	} catch (error) {
 		console.error('Error fetching exchange rates:', error);
