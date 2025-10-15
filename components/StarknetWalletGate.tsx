@@ -16,9 +16,7 @@ export default function StarknetWalletGate({ children, label, connectedClass = '
 	const { connect, connectors } = useConnect();
 	const { disconnect } = useDisconnect();
 	const { address } = useAccount();
-	const { starknetkitConnectModal } = useStarknetkitConnectModal({
-		connectors: connectors
-	})
+	const { starknetkitConnectModal } = useStarknetkitConnectModal({ connectors })
 
 	async function connectWallet() {
 		setIsConnecting(true)
