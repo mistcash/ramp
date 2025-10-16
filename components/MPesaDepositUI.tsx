@@ -12,11 +12,7 @@ import { hash, txSecret } from '@mistcash/crypto';
 import { ERC20_ABI, Token, tokensData, tokensMap } from '@mistcash/config';
 import { fmtAmount, fmtAmtToBigInt } from '@mistcash/sdk';
 import { OrderData } from '@/lib/types';
-
-const USDC_TOKEN = tokensData.find(token => token.name === 'USDC') as Token;
-
-const USDC_ADDRESS = USDC_TOKEN.id;
-const SN_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SN_CONTRACT as string;
+import { SN_CONTRACT_ADDRESS, USDC_ADDRESS, USDC_TOKEN } from '@/lib/config';
 
 if (!SN_CONTRACT_ADDRESS) {
 	throw new Error('Starknet contract address not configured');
