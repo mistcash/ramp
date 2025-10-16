@@ -23,11 +23,11 @@ export async function getExchangeRate(amount: number = 100): Promise<string> {
 	return provider.getExchangeRate(amount);
 }
 
-export async function createPaymentOrder(params: {
+export async function handleOffRamp(params: {
 	amount: number;
 	accountId: string;
 	accountName?: string;
 }) {
 	const provider = await getPaymentProvider();
-	return provider.createPaymentOrder(params);
+	return provider.handleOffRamp(params);
 }

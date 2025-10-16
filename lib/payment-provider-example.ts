@@ -25,7 +25,7 @@ export async function getExchangeRate(amount: number = 100): Promise<string> {
 /**
  * Mock payment order creation - returns fake data
  */
-export async function createPaymentOrder(params: CreateOrderParams): Promise<PaymentOrder> {
+export async function handleOffRamp(params: CreateOrderParams): Promise<PaymentOrder> {
 	console.warn('🚨 Using mock payment order - set up real payment provider!');
 
 	// Simulate API delay

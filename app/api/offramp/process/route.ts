@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createPaymentOrder } from '@/lib/payment-provider-wrapper';
+import { handleOffRamp } from '@/lib/payment-provider-wrapper';
 import { z } from 'zod';
 
 // Request validation schema
 const ProcessOfframpSchema = z.object({
-	phoneNumber: z.string().regex(/^[0-9]{9}$/, 'Invalid Kenyan phone number format'),
-	salt: z.string().min(1, 'Salt is required'),
+	salt: z.string().min(40, 'Salt is required'),
 	amount: z.string().regex(/^\d+(\.\d{1,6})?$/, 'Invalid amount format'),
 	txSecret: z.string().min(40, 'Transaction secret is required'),
 	accountName: z.string().min(3, 'Account name is required'),
+	phoneNumber: z.string().regex(/^[0-9]{9}$/, 'Invalid Kenyan phone number format'),
 	memo: z.string().optional(),
 });
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 		console.log('Processing offramp:', { phoneNumber, amount });
 
 		// Create payment order
-		const order = await createPaymentOrder({
+		const order = await handleOffRamp({
 			amount: parseFloat(amount),
 			accountId: phoneNumber,
 			accountName
