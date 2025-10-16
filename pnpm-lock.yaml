@@ -53,6 +53,9 @@ importers:
       starknetkit:
         specifier: ^3.1.0
         version: 3.2.0(7bdb563bda5a131edced947d8b3e7f4d)
+      viem:
+        specifier: ^2.38.2
+        version: 2.38.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.12)
       zod:
         specifier: ^4.1.12
         version: 4.1.12
