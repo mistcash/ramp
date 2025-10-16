@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Field, InputField, Button, baseUIBoxClasses } from './UI';
-import { DollarSign, Smartphone, Send, WalletMinimal, Icon, User2 } from 'lucide-react';
+import { DollarSign, Smartphone, Send, WalletMinimal, Icon, User2, Loader2, CheckCircle, AlertCircle, X } from 'lucide-react';
 import StarknetWalletGate from './StarknetWalletGate';
 import { useAccount, useContract, useSendTransaction, useProvider } from '@starknet-react/core';
 import { uint256 } from "starknet"
@@ -45,6 +45,10 @@ const MPesaDepositUI: React.FC = () => {
 	const { contract: usdcContract } = useContract({ abi: ERC20_ABI, address: USDC_ADDRESS as `0x${string}` });
 	const [balance, setBalance] = useState<string>('0');
 	const [rate, setRate] = useState<number>(0);
+	const [isProcessing, setIsProcessing] = useState<boolean>(false);
+	const [processStatus, setProcessStatus] = useState<string>('');
+	const [retryCount, setRetryCount] = useState<number>(0);
+	const [maxRetries] = useState<number>(3);
 
 	// Generate random salt on component mount
 	useEffect(() => {
@@ -137,42 +141,71 @@ const MPesaDepositUI: React.FC = () => {
 		]);
 	}
 
-	const callAPI = async (orderData: OrderData) => {
-		const apiResponse = await fetch('/api/offramp/process', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(orderData),
-		});
+	const callAPI = async (orderData: OrderData, attempt: number = 1): Promise<any> => {
+		setProcessStatus(`Verifying transaction... (${attempt} of ${maxRetries})`);
+		setRetryCount(attempt);
 
-		if (!apiResponse.ok) {
-			throw new Error('API call failed');
+		try {
+			const apiResponse = await fetch('/api/offramp/process', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(orderData),
+			});
+
+			const apiData = await apiResponse.json();
+			console.log('API Response:', apiData);
+
+			// Check for transaction not found error - this means we should retry
+			if (apiData.error === "Transaction does not exist" && attempt < maxRetries) {
+				console.log(`Transaction not found, retrying in 3 seconds... (${attempt}/${maxRetries})`);
+				await new Promise(resolve => setTimeout(resolve, 3000 + attempt * 2000));
+				return await callAPI(orderData, attempt + 1);
+			}
+
+			// Any other error or max retries reached
+			if (apiData.error && apiData.error !== "Transaction does not exist") {
+				throw new Error(apiData.error);
+			}
+
+			if (apiData.error === "Transaction does not exist" && attempt >= maxRetries) {
+				throw new Error("Transaction verification timed out after multiple attempts. Please contact support.");
+			}
+
+			return apiData;
+		} catch (error) {
+			if (attempt < maxRetries && (error as Error).message === 'API call failed') {
+				console.log(`API call failed, retrying in 3 seconds... (${attempt}/${maxRetries})`);
+				await new Promise(resolve => setTimeout(resolve, 3000));
+				return await callAPI(orderData, attempt + 1);
+			}
+			throw error;
 		}
-
-		const apiData = await apiResponse.json();
-		console.log('API Response:', apiData);
-
-		return apiData;
 	}
 
 	// Handle deposit submission
 	const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		setIsProcessing(true);
+		setRetryCount(0);
 
 		try {
 			const orderData = await prepareOrderData();
 
 			if (!orderData) {
+				setIsProcessing(false);
 				return;
 			}
 
 			console.log("Processing Order Data:", JSON.stringify(orderData, null, 2));
 
+			setProcessStatus("Creating private transaction...");
 			console.log("Making TX");
 			// Create a private transaction for order
 			let txResponse = await makePrivateTx(orderData);
 
+			setProcessStatus("Transaction submitted, waiting for confirmation...");
 			// wait 5 seconds before calling API
 			await new Promise(res => setTimeout(res, 5000));
 
@@ -183,15 +216,26 @@ const MPesaDepositUI: React.FC = () => {
 			const apiData = await callAPI(orderData);
 			console.log('API Response:', apiData);
 
-			alert(`Deposit successful! You will receive KES ${kesAmount} to ${mpesaPhone}`);
+			// Check if successful
+			if (apiData.success === "true" || apiData.id) {
+				setProcessStatus("Success! Processing M-Pesa transfer...");
+				await new Promise(res => setTimeout(res, 2000));
 
-			// Reset form and generate new salt
-			setMpesaPhone('');
-			setUsdcAmount('');
-			setKesAmount('0.00');
-			setSalt(genSalt());
+				// Reset form and generate new salt
+				setMpesaPhone('');
+				setUsdcAmount('');
+				setKesAmount('0.00');
+				setSalt(genSalt());
+				setIsProcessing(false);
+
+				alert(`Deposit successful! You will receive KES ${kesAmount} to ${mpesaPhone}. The M-Pesa transfer should arrive within a few minutes.`);
+			} else {
+				throw new Error("Unexpected API response format");
+			}
 		} catch (error) {
 			console.error("Failed to send transaction:", error);
+			setProcessStatus("Error occurred");
+			// Keep overlay open to show error
 		}
 	};
 
@@ -291,6 +335,81 @@ const MPesaDepositUI: React.FC = () => {
 					</div>
 				)}
 			</div>
+
+			{/* Processing Overlay */}
+			{isProcessing && (
+				<div className="fixed inset-0 bg-black/50 bg-opacity-75 flex items-center justify-center z-50" style={{ 'backdropFilter': 'blur(1px)' }}>
+					<div className="rounded-lg p-6 max-w-md w-full mx-4 border border-gray-600 mt-10" style={{ 'backdropFilter': 'blur(5px)' }}>
+						<div className="text-center">
+							<div className="mb-4">
+								{processStatus.includes("Error") ? (
+									<AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-2" />
+								) : processStatus.includes("Success") ? (
+									<CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+								) : (
+									<Image className="w-12 h-12 text-blue-500 mx-auto mb-2 animate-spin" src="/mist-logo.svg" alt="Mist logo" width={40} height={40} priority />
+								)}
+							</div>
+
+							<h3 className="text-xl font-semibold text-white mb-2">
+								{processStatus.includes("Error") ? "Transaction Failed" :
+									processStatus.includes("Success") ? "Transaction Successful!" : "Processing Transaction"}
+							</h3>
+
+							<p className="mb-4">{processStatus}</p>
+
+							{retryCount > 0 && !processStatus.includes("Error") && !processStatus.includes("Success") && (
+								<div className="mb-4">
+									<div className="rounded-full h-2 mb-2">
+										<div
+											className="h-2 rounded-full transition-all duration-300"
+											style={{ width: `${(retryCount / maxRetries) * 100}%` }}
+										></div>
+									</div>
+									<p className="text-sm text-gray-400">Retry {retryCount} of {maxRetries}</p>
+								</div>
+							)}
+
+							{processStatus.includes("Error") && (
+								<div className="text-left">
+									<div className="bg-red-900 border border-red-600 rounded p-3 mb-4 text-sm">
+										<p className="text-red-200 mb-2"><strong>Error Details:</strong></p>
+										<p className="text-red-100 font-mono text-xs break-all">{error?.message}</p>
+									</div>
+									<p className="text-gray-300 text-sm mb-4">
+										Please contact our support team on Telegram for assistance with your transaction.
+									</p>
+									<div className="flex gap-2">
+										<button
+											onClick={() => setIsProcessing(false)}
+											className="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded transition-colors"
+										>
+											Close
+										</button>
+										<a
+											href="https://t.me/mistcash"
+											target="_blank"
+											rel="noopener noreferrer"
+											className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded transition-colors text-center"
+										>
+											Contact Support
+										</a>
+									</div>
+								</div>
+							)}
+
+							{processStatus.includes("Success") && (
+								<button
+									onClick={() => setIsProcessing(false)}
+									className="bg-green-600 hover:bg-green-500 text-white py-2 px-6 rounded transition-colors"
+								>
+									Continue
+								</button>
+							)}
+						</div>
+					</div>
+				</div>
+			)}
 		</form>
 	);
 };
