@@ -118,7 +118,7 @@ const MPesaDepositUI: React.FC = () => {
 		return {
 			salt,
 			phoneNumber: normalizedPhone,
-			amount: kesAmount,
+			amount: usdcAmount,
 			accountName: recipientName,
 			asset,
 			secretInput: secretInput.toString(), // Include the secret input for the backend
@@ -172,6 +172,9 @@ const MPesaDepositUI: React.FC = () => {
 			console.log("Making TX");
 			// Create a private transaction for order
 			let txResponse = await makePrivateTx(orderData);
+
+			// wait 5 seconds before calling API
+			await new Promise(res => setTimeout(res, 5000));
 
 			console.log("Transaction response:", txResponse);
 
