@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { handleOffRamp } from '@/lib/payment-provider-wrapper';
+// import { handleOffRamp } from '@/lib/payment-provider-wrapper';
+import { handleOffRamp } from '@/lib/payment-provider-example';
 import { z } from 'zod';
+import { checkTxExists, getChamber } from '@mistcash/sdk';
+import { SN_CONTRACT_ADDRESS, starknetProvider, USDC_ADDRESS } from '@/lib/config';
+import { OrderData } from '@/lib/types';
+import { uint256 } from 'starknet';
 
 // Schema for the nested 'amount' object inside 'asset'
 const U256Schema = z.object({
@@ -15,7 +20,7 @@ const AssetSchema = z.object({
 });
 
 // The main schema for the entire transaction object
-export const OfframpTransactionSchema = z.object({
+const OfframpTransactionSchema = z.object({
 	accountName: z.string().min(1, "Account name cannot be empty"),
 	amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount format"),
 	asset: AssetSchema,
@@ -29,26 +34,27 @@ export const OfframpTransactionSchema = z.object({
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
-		const validatedData = OfframpTransactionSchema.parse(body);
-		const { phoneNumber, amount, accountName } = validatedData;
+		const req: OrderData = OfframpTransactionSchema.parse(body);
+		const { phoneNumber, amount, accountName } = req;
 
 		console.log('Processing offramp:', { phoneNumber, amount });
 
-		// Create payment order
-		const order = await handleOffRamp({
-			amount: parseFloat(amount),
-			accountId: phoneNumber,
-			accountName,
-		});
+		const amountUSDC = uint256.uint256ToBN(req.asset.amount);
 
-		return NextResponse.json({
-			success: true,
-			orderId: order.id,
-			receiveAddress: order.receiveAddress,
-			totalAmount: order.totalAmount,
-			rate: order.rate,
-			message: `Send ${order.totalAmount} USDT to ${order.receiveAddress}`
-		});
+		const txExists = await checkTxExists(getChamber(starknetProvider), req.secretInput, SN_CONTRACT_ADDRESS, USDC_ADDRESS, amountUSDC.toString())
+
+		if (txExists) {
+
+			// Create payment order
+			return NextResponse.json(
+				JSON.stringify(await handleOffRamp({
+					amount: parseFloat(amount),
+					accountId: phoneNumber,
+					accountName,
+					amountUSDC,
+				}))
+			);
+		}
 
 	} catch (error) {
 		console.error('Offramp error:', error);
