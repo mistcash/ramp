@@ -11,6 +11,7 @@ import { useMist } from '@mistcash/react';
 import { hash, txSecret } from '@mistcash/crypto';
 import { ERC20_ABI, Token, tokensData, tokensMap } from '@mistcash/config';
 import { fmtAmount, fmtAmtToBigInt } from '@mistcash/sdk';
+import { OrderData } from '@/lib/types';
 
 const USDC_TOKEN = tokensData.find(token => token.name === 'USDC') as Token;
 
@@ -87,10 +88,7 @@ const MPesaDepositUI: React.FC = () => {
 		})();
 	}, [address, usdcContract]);
 
-	// Handle deposit submission
-	const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-
+	const prepareOrderData = async (): Promise<OrderData | undefined> => {
 		if (!mpesaPhone || !usdcAmount || !address || !usdcContract || !salt || !contract) {
 			console.error("Missing required fields");
 			return;
@@ -103,67 +101,83 @@ const MPesaDepositUI: React.FC = () => {
 			return;
 		}
 
+		// Normalize phone number
+		const normalizedPhone = mpesaPhone.replace(/^(\+254|254|0)/, '254');
+
+		// Create transaction secret from salt + phone number + currency ID 'KES'
+		const secretInput = await hash(BigInt(normalizedPhone), BigInt(salt));
+
+		// Convert USDC amount to wei (6 decimals for USDC)
+		const amount_bi = fmtAmtToBigInt(amountWithFees.toFixed(2), USDC_TOKEN.decimals || 18);
+		const amountCharged = uint256.bnToUint256(amount_bi);
+
+		// Set up the USDC contract
+		usdcContract.address = USDC_ADDRESS;
+
+		const asset = {
+			amount: amountCharged,
+			addr: USDC_ADDRESS
+		};
+
+		return {
+			salt,
+			phoneNumber: normalizedPhone,
+			amount: kesAmount,
+			accountName: recipientName,
+			asset,
+			secretInput: secretInput.toString(), // Include the secret input for the backend
+		};
+	}
+
+	const makePrivateTx = async (orderData: OrderData) => {
+		if (!usdcContract) return;
+
+		const txSecretValue = await txSecret(orderData.secretInput, SN_CONTRACT_ADDRESS);
+
+		// Execute the Mist deposit transaction (exactly like TransferUI)
+		sendAsync([
+			usdcContract.populate('approve', [chamberAddress, orderData.asset.amount]),
+			contract.populate('deposit', [txSecretValue, orderData.asset])
+		]);
+	}
+
+	const callAPI = async (orderData: OrderData) => {
+		const apiResponse = await fetch('/api/offramp/process', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(orderData),
+		});
+
+		if (!apiResponse.ok) {
+			throw new Error('API call failed');
+		}
+
+		const apiData = await apiResponse.json();
+		console.log('API Response:', apiData);
+
+		return apiData;
+	}
+
+	// Handle deposit submission
+	const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
 		try {
-			// Normalize phone number
-			const normalizedPhone = mpesaPhone.replace(/^(\+254|254|0)/, '254');
+			const orderData = await prepareOrderData();
 
-			// Create transaction secret from salt + phone number + currency ID 'KES'
-			const secretInput = await hash(BigInt(normalizedPhone), BigInt(salt));
-
-			// Convert USDC amount to wei (6 decimals for USDC)
-			const amount_bi = fmtAmtToBigInt(amountWithFees.toFixed(2), USDC_TOKEN.decimals || 18);
-			const amountCharged = uint256.bnToUint256(amount_bi);
-
-			// Set up the USDC contract
-			usdcContract.address = USDC_ADDRESS;
-
-			const asset = {
-				amount: amountCharged,
-				addr: USDC_ADDRESS
-			};
-
-			const txSecretValue = await txSecret(secretInput.toString(), SN_CONTRACT_ADDRESS);
-			// Set the USDC contract address (exactly like TransferUI)
-			usdcContract.address = USDC_ADDRESS;
-
-			console.log(
-				'\napprove', [chamberAddress, amountCharged],
-				'\ndeposit', [txSecretValue, asset]
-			)
-
-			// Execute the Mist deposit transaction (exactly like TransferUI)
-			sendAsync([
-				usdcContract.populate('approve', [chamberAddress, amountCharged]),
-				contract.populate('deposit', [txSecretValue, asset])
-			]);
-
-			const orderData = {
-				salt,
-				phoneNumber: normalizedPhone,
-				amount: kesAmount,
-				accountName: recipientName,
-				asset,
-				secretInput: secretInput.toString(), // Include the secret input for the backend
-			};
-
-
+			if (!orderData) {
+				return;
+			}
 
 			console.log("Processing Order Data:", orderData);
 
+			// Create a private transaction for order
+			await makePrivateTx(orderData);
+
 			// Call API to process the deposit request
-			const apiResponse = await fetch('/api/offramp/process', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(orderData),
-			});
-
-			if (!apiResponse.ok) {
-				throw new Error('API call failed');
-			}
-
-			const apiData = await apiResponse.json();
+			const apiData = await callAPI(orderData);
 			console.log('API Response:', apiData);
 
 			alert(`Deposit successful! You will receive KES ${kesAmount} to ${mpesaPhone}`);
