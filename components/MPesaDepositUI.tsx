@@ -111,20 +111,25 @@ const MPesaDepositUI: React.FC = () => {
 			const secretInput = await hash(BigInt(normalizedPhone), BigInt(salt));
 
 			// Convert USDC amount to wei (6 decimals for USDC)
-			const amount_bi = fmtAmtToBigInt(amountWithFees.toString(), USDC_TOKEN.decimals || 18);
+			const amount_bi = fmtAmtToBigInt(amountWithFees.toFixed(2), USDC_TOKEN.decimals || 18);
 			const amountCharged = uint256.bnToUint256(amount_bi);
 
 			// Set up the USDC contract
 			usdcContract.address = USDC_ADDRESS;
 
 			const asset = {
-				amountCharged,
+				amount: amountCharged,
 				addr: USDC_ADDRESS
 			};
 
 			const txSecretValue = await txSecret(secretInput.toString(), SN_CONTRACT_ADDRESS);
 			// Set the USDC contract address (exactly like TransferUI)
 			usdcContract.address = USDC_ADDRESS;
+
+			console.log(
+				'\napprove', [chamberAddress, amountCharged],
+				'\ndeposit', [txSecretValue, asset]
+			)
 
 			// Execute the Mist deposit transaction (exactly like TransferUI)
 			sendAsync([
@@ -137,8 +142,8 @@ const MPesaDepositUI: React.FC = () => {
 				phoneNumber: normalizedPhone,
 				amount: kesAmount,
 				accountName: recipientName,
-				amountCharged: amountCharged,
-				secretInput: secretInput, // Include the secret input for the backend
+				asset,
+				secretInput: secretInput.toString(), // Include the secret input for the backend
 			};
 
 
@@ -222,7 +227,7 @@ const MPesaDepositUI: React.FC = () => {
 			</Field>
 
 			{/* USDC Amount */}
-			<Field label="USDC Amount" subtitle={`${amountWithFees} USDC after fees (1% + 20¢)`}>
+			<Field label="USDC Amount" subtitle={!!amountWithFees ? `${amountWithFees.toFixed(2)} USDC after fees (1% + 20¢)` : ''}>
 				<InputField
 					after={address && <span className="text-sm -mt-1 mb-auto text-gray-400">Max: {balance}</span>} required={true}
 					icon={icon('#3B82F6', DollarSign)}
