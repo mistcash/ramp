@@ -47,6 +47,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.0(react@19.2.0)
+      starknet:
+        specifier: ^8.0.0
+        version: 8.5.5
       starknetkit:
         specifier: ^3.1.0
         version: 3.2.0(7bdb563bda5a131edced947d8b3e7f4d)
