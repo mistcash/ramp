@@ -2,20 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { handleOffRamp } from '@/lib/payment-provider-wrapper';
 import { z } from 'zod';
 
-// Request validation schema
-const ProcessOfframpSchema = z.object({
-	salt: z.string().min(40, 'Salt is required'),
-	amount: z.string().regex(/^\d+(\.\d{1,6})?$/, 'Invalid amount format'),
-	txSecret: z.string().min(40, 'Transaction secret is required'),
-	accountName: z.string().min(3, 'Account name is required'),
-	phoneNumber: z.string().regex(/^[0-9]{9}$/, 'Invalid Kenyan phone number format'),
-	memo: z.string().optional(),
+// Schema for the nested 'amount' object inside 'asset'
+const U256Schema = z.object({
+	low: z.string().regex(/^0x[0-9a-fA-F]+$/, "Invalid hex format for low"),
+	high: z.string().regex(/^0x[0-9a-fA-F]+$/, "Invalid hex format for high"),
 });
+
+// Schema for the 'asset' object
+const AssetSchema = z.object({
+	amount: U256Schema,
+	addr: z.string().regex(/^0x[0-9a-fA-F]+$/, "Invalid hex format for addr"),
+});
+
+// The main schema for the entire transaction object
+export const OfframpTransactionSchema = z.object({
+	accountName: z.string().min(1, "Account name cannot be empty"),
+	amount: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid amount format"),
+	asset: AssetSchema,
+	phoneNumber: z.string().regex(/^\d+$/, "Phone number must contain only digits"),
+	salt: z.string().regex(/^0x[0-9a-fA-F]+$/, "Invalid hex format for salt"),
+	// Validates a string of digits, which can then be safely converted to a BigInt
+	secretInput: z.string().regex(/^\d+$/, "Secret input must be a string of digits"),
+});
+
 
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
-		const validatedData = ProcessOfframpSchema.parse(body);
+		const validatedData = OfframpTransactionSchema.parse(body);
 		const { phoneNumber, amount, accountName } = validatedData;
 
 		console.log('Processing offramp:', { phoneNumber, amount });
@@ -24,7 +38,7 @@ export async function POST(request: NextRequest) {
 		const order = await handleOffRamp({
 			amount: parseFloat(amount),
 			accountId: phoneNumber,
-			accountName
+			accountName,
 		});
 
 		return NextResponse.json({
@@ -33,7 +47,6 @@ export async function POST(request: NextRequest) {
 			receiveAddress: order.receiveAddress,
 			totalAmount: order.totalAmount,
 			rate: order.rate,
-			validUntil: order.validUntil,
 			message: `Send ${order.totalAmount} USDT to ${order.receiveAddress}`
 		});
 
