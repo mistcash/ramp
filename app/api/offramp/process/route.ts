@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-// import { handleOffRamp } from '@/lib/payment-provider-wrapper';
-import { handleOffRamp } from '@/lib/payment-provider-example';
+import { handleOffRamp } from '@/lib/payment-provider-wrapper';
 import { z } from 'zod';
 import { checkTxExists, getChamber } from '@mistcash/sdk';
 import { SN_CONTRACT_ADDRESS, starknetProvider, USDC_ADDRESS } from '@/lib/config';
@@ -47,13 +46,19 @@ export async function POST(request: NextRequest) {
 
 			// Create payment order
 			return NextResponse.json(
-				JSON.stringify(await handleOffRamp({
+				await handleOffRamp({
 					amount: parseFloat(amount),
 					accountId: phoneNumber,
 					accountName,
 					amountUSDC,
-				}))
+				})
 			);
+		} else {
+			return NextResponse.json(
+				{ error: "Transaction does not exist" },
+				{ status: 500 }
+			);
+
 		}
 
 	} catch (error) {
