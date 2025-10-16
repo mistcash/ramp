@@ -5,6 +5,7 @@ import { checkTxExists, getChamber } from '@mistcash/sdk';
 import { SN_CONTRACT_ADDRESS, starknetProvider, USDC_ADDRESS } from '@/lib/config';
 import { OrderData } from '@/lib/types';
 import { uint256 } from 'starknet';
+import { txHash } from '@mistcash/crypto';
 
 // Schema for the nested 'amount' object inside 'asset'
 const U256Schema = z.object({
@@ -39,7 +40,10 @@ export async function POST(request: NextRequest) {
 
 		const amountUSDC = uint256.uint256ToBN(req.asset.amount);
 
-		const txExists = await checkTxExists(getChamber(starknetProvider), req.secretInput, SN_CONTRACT_ADDRESS, USDC_ADDRESS, amountUSDC.toString())
+		const mistTxId = await txHash(req.secretInput, SN_CONTRACT_ADDRESS, USDC_ADDRESS, amountUSDC.toString())
+		const allTransactions = await getChamber(starknetProvider).tx_array() as bigint[];
+
+		const txExists = allTransactions.includes(mistTxId)
 
 		if (txExists) {
 
@@ -50,7 +54,7 @@ export async function POST(request: NextRequest) {
 					accountId: phoneNumber,
 					accountName,
 					amountUSDC,
-					mistTxId: req.secretInput,
+					mistTxId: mistTxId.toString(),
 				})
 			);
 		} else {

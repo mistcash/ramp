@@ -15,6 +15,7 @@ export interface OrderData {
 export interface OrderResult {
 	id: string;
 	success: string;
+	data?: unknown
 }
 
 export interface CreateOrderParams {
