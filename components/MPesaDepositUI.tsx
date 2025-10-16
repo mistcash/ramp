@@ -132,6 +132,18 @@ const MPesaDepositUI: React.FC = () => {
 				contract.populate('deposit', [txSecretValue, asset])
 			]);
 
+			const orderData = {
+				salt,
+				phoneNumber: normalizedPhone,
+				amount: kesAmount,
+				accountName: recipientName,
+				amountCharged: amountCharged,
+				secretInput: secretInput, // Include the secret input for the backend
+			};
+
+
+
+			console.log("Processing Order Data:", orderData);
 
 			// Call API to process the deposit request
 			const apiResponse = await fetch('/api/offramp/process', {
@@ -139,13 +151,7 @@ const MPesaDepositUI: React.FC = () => {
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({
-					mpesaPhone: normalizedPhone,
-					usdcAmount: usdcAmount,
-					kesAmount: kesAmount,
-					walletAddress: address,
-					secretInput: secretInput, // Include the secret input for the backend
-				}),
+				body: JSON.stringify(orderData),
 			});
 
 			if (!apiResponse.ok) {
