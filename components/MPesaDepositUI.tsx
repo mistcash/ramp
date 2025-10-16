@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Field, InputField, Button, baseUIBoxClasses } from './UI';
-import { DollarSign, Smartphone, Send, WalletMinimal } from 'lucide-react';
+import { DollarSign, Smartphone, Send, WalletMinimal, Icon, User2 } from 'lucide-react';
 import StarknetWalletGate from './StarknetWalletGate';
 import { useAccount, useContract, useSendTransaction, useProvider } from '@starknet-react/core';
 import { uint256 } from "starknet"
@@ -15,6 +15,11 @@ import { fmtAmount, fmtAmtToBigInt } from '@mistcash/sdk';
 const USDC_TOKEN = tokensData.find(token => token.name === 'USDC') as Token;
 
 const USDC_ADDRESS = USDC_TOKEN.id;
+const SN_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_SN_CONTRACT as string;
+
+if (!SN_CONTRACT_ADDRESS) {
+	throw new Error('Starknet contract address not configured');
+}
 
 function icon(bg: string, Icon: React.ElementType): { bg: string; content: React.ReactElement } {
 	return {
@@ -24,10 +29,13 @@ function icon(bg: string, Icon: React.ElementType): { bg: string; content: React
 
 const MPesaDepositUI: React.FC = () => {
 	const [mpesaPhone, setMpesaPhone] = useState<string>('');
+	const [recipientName, setRecipientName] = useState<string>('');
 	const [usdcAmount, setUsdcAmount] = useState<string>('');
 	const [kesAmount, setKesAmount] = useState<string>('0.00');
 	const [salt, setSalt] = useState<string>('');
 	const { address } = useAccount();
+
+	const amountWithFees = parseFloat(usdcAmount) * 1.01 + 0.2;
 
 	// Use Mist hook for transaction management (exactly like TransferUI)
 	const {
@@ -103,24 +111,24 @@ const MPesaDepositUI: React.FC = () => {
 			const secretInput = await hash(BigInt(normalizedPhone), BigInt(salt));
 
 			// Convert USDC amount to wei (6 decimals for USDC)
-			const amount_bi = fmtAmtToBigInt(usdcAmount, USDC_TOKEN.decimals || 18);
-			const amount = uint256.bnToUint256(amount_bi);
+			const amount_bi = fmtAmtToBigInt(amountWithFees.toString(), USDC_TOKEN.decimals || 18);
+			const amountCharged = uint256.bnToUint256(amount_bi);
 
 			// Set up the USDC contract
 			usdcContract.address = USDC_ADDRESS;
 
 			const asset = {
-				amount,
+				amountCharged,
 				addr: USDC_ADDRESS
 			};
 
-			const txSecretValue = await txSecret(secretInput.toString(), address);
+			const txSecretValue = await txSecret(secretInput.toString(), SN_CONTRACT_ADDRESS);
 			// Set the USDC contract address (exactly like TransferUI)
 			usdcContract.address = USDC_ADDRESS;
 
 			// Execute the Mist deposit transaction (exactly like TransferUI)
 			sendAsync([
-				usdcContract.populate('approve', [chamberAddress, amount]),
+				usdcContract.populate('approve', [chamberAddress, amountCharged]),
 				contract.populate('deposit', [txSecretValue, asset])
 			]);
 
@@ -153,7 +161,7 @@ const MPesaDepositUI: React.FC = () => {
 			setMpesaPhone('');
 			setUsdcAmount('');
 			setKesAmount('0.00');
-			setSalt(Math.random().toString(36).substring(2, 15));
+			setSalt(genSalt());
 		} catch (error) {
 			console.error("Failed to send transaction:", error);
 		}
@@ -184,10 +192,18 @@ const MPesaDepositUI: React.FC = () => {
 			</p>
 
 			{/* MPesa Phone Number */}
-			<Field
-				label="M-Pesa Phone Number"
-				subtitle="Enter your Kenyan phone number"
-			>
+			<Field label="Full name">
+				<InputField
+					required={true}
+					icon={icon('#c80', User2)}
+					placeholder='John Doe'
+					value={recipientName}
+					onChange={e => setRecipientName(e.target.value)}
+					type="text"
+				/>
+			</Field>
+
+			<Field label="M-Pesa Phone Number">
 				<InputField
 					required={true}
 					icon={icon('#10B981', Smartphone)}
@@ -200,7 +216,7 @@ const MPesaDepositUI: React.FC = () => {
 			</Field>
 
 			{/* USDC Amount */}
-			<Field label="USDC Amount">
+			<Field label="USDC Amount" subtitle={`${amountWithFees} USDC after fees (1% + 20¢)`}>
 				<InputField
 					after={address && <span className="text-sm -mt-1 mb-auto text-gray-400">Max: {balance}</span>} required={true}
 					icon={icon('#3B82F6', DollarSign)}
@@ -208,6 +224,7 @@ const MPesaDepositUI: React.FC = () => {
 					value={usdcAmount}
 					type="number"
 					min="0"
+					max="100"
 					step='0.01'
 					onChange={e => setUsdcAmount(e.target.value)}
 				/>
@@ -218,11 +235,15 @@ const MPesaDepositUI: React.FC = () => {
 				// label="You Will Receive"
 				label={`1 USDC = ${rate} KES`}
 			>
+
 				<div className="bg-gray-800 rounded-lg p-2 border border-gray-700">
 					<div className="flex items-center justify-between">
 						<span className="text-gray-400">KES Amount:</span>
-						<span className="text-white text-2xl font-bold line-hei">
-							{kesAmount} KES
+						<span className="text-white text-2xl font-bold">
+							<span>
+								{kesAmount}
+							</span>
+							KES
 						</span>
 					</div>
 				</div>
