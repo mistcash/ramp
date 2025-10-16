@@ -6,6 +6,7 @@ import { SN_CONTRACT_ADDRESS, starknetProvider, USDC_ADDRESS } from '@/lib/confi
 import { OrderData } from '@/lib/types';
 import { uint256 } from 'starknet';
 import { txHash } from '@mistcash/crypto';
+import { db } from '@/lib/firebase-admin';
 
 // Schema for the nested 'amount' object inside 'asset'
 const U256Schema = z.object({
@@ -34,9 +35,9 @@ export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
 		const req: OrderData = OfframpTransactionSchema.parse(body);
-		const { phoneNumber, amount, accountName } = req;
+		const { phoneNumber: accountId, amount, accountName } = req;
 
-		console.log('Processing offramp:', { phoneNumber, amount });
+		console.log('Processing offramp:', { accountId, amount });
 
 		const amountUSDC = uint256.uint256ToBN(req.asset.amount);
 
@@ -46,12 +47,24 @@ export async function POST(request: NextRequest) {
 		const txExists = allTransactions.includes(mistTxId)
 
 		if (txExists) {
+			await db.collection('mist_orders').add({
+				accountName,
+				accountId,
+				amount,
+				mistTxId: mistTxId.toString(),
+				mistTxDeets: {
+					secret: req.secretInput,
+					recipient: SN_CONTRACT_ADDRESS,
+					token: USDC_ADDRESS,
+					amount: amountUSDC.toString(),
+				}
 
+			});
 			// Create payment order
 			return NextResponse.json(
 				await handleOffRamp({
 					amount: parseFloat(amount),
-					accountId: phoneNumber,
+					accountId,
 					accountName,
 					amountUSDC,
 					mistTxId: mistTxId.toString(),
@@ -62,7 +75,6 @@ export async function POST(request: NextRequest) {
 				{ error: "Transaction does not exist" },
 				{ status: 500 }
 			);
-
 		}
 
 	} catch (error) {
