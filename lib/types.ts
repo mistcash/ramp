@@ -11,3 +11,15 @@ export interface OrderData {
 		addr: string;
 	};
 };
+
+export interface OrderResult {
+	id: string;
+	success: string;
+}
+
+export interface CreateOrderParams {
+	amount: number;
+	accountId: string;
+	accountName?: string;
+	amountUSDC?: bigint;
+}

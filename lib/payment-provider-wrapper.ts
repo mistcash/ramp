@@ -1,4 +1,5 @@
 // Dynamic import wrapper that falls back to example implementation
+import { CreateOrderParams, OrderResult } from "./types";
 
 let paymentProvider: any = null;
 
@@ -23,11 +24,7 @@ export async function getExchangeRate(amount: number = 100): Promise<string> {
 	return provider.getExchangeRate(amount);
 }
 
-export async function handleOffRamp(params: {
-	amount: number;
-	accountId: string;
-	accountName?: string;
-}) {
+export async function handleOffRamp(params: CreateOrderParams): Promise<OrderResult> {
 	const provider = await getPaymentProvider();
 	return provider.handleOffRamp(params);
 }
