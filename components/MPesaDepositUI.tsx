@@ -131,7 +131,7 @@ const MPesaDepositUI: React.FC = () => {
 		const txSecretValue = await txSecret(orderData.secretInput, SN_CONTRACT_ADDRESS);
 
 		// Execute the Mist deposit transaction (exactly like TransferUI)
-		sendAsync([
+		return await sendAsync([
 			usdcContract.populate('approve', [chamberAddress, orderData.asset.amount]),
 			contract.populate('deposit', [txSecretValue, orderData.asset])
 		]);
@@ -167,11 +167,15 @@ const MPesaDepositUI: React.FC = () => {
 				return;
 			}
 
-			console.log("Processing Order Data:", orderData);
+			console.log("Processing Order Data:", JSON.stringify(orderData, null, 2));
 
+			console.log("Making TX");
 			// Create a private transaction for order
-			await makePrivateTx(orderData);
+			let txResponse = await makePrivateTx(orderData);
 
+			console.log("Transaction response:", txResponse);
+
+			console.log("Calling API");
 			// Call API to process the deposit request
 			const apiData = await callAPI(orderData);
 			console.log('API Response:', apiData);
