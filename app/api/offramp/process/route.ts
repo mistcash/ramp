@@ -29,7 +29,6 @@ const OfframpTransactionSchema = z.object({
 	secretInput: z.string().regex(/^\d+$/, "Secret input must be a string of digits"),
 });
 
-
 export async function POST(request: NextRequest) {
 	try {
 		const body = await request.json();
@@ -51,6 +50,7 @@ export async function POST(request: NextRequest) {
 					accountId: phoneNumber,
 					accountName,
 					amountUSDC,
+					mistTxId: req.secretInput,
 				})
 			);
 		} else {

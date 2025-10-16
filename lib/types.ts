@@ -18,8 +18,9 @@ export interface OrderResult {
 }
 
 export interface CreateOrderParams {
-	amount: number;
 	accountId: string;
 	accountName?: string;
+	amount: number;
+	mistTxId?: string;
 	amountUSDC?: bigint;
 }
